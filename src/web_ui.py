@@ -181,8 +181,7 @@ async def on_message(message: cl.Message):
                 async for text in result.stream_text(debounce_by=0.01):
                     await msg.stream_token(text)
             except Exception:
-                pass
-                await msg.stream_token(text)
+                pass  # structured output — handled via result.output below
             
             if msg.content:
                 await msg.send()
