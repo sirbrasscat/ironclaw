@@ -20,8 +20,9 @@
   3. Agent prompts the user for approval before executing destructive or high-risk commands.
   4. Agent utilizes Pydantic AI for reasoning/orchestration before calling Open Interpreter.
 **Plans**:
-- [ ] 01-01-PLAN.md — Establish Docker sandbox and language bridge.
-- [ ] 01-02-PLAN.md — Pydantic AI Agent integration and HITL approval.
+- [x] 01-01-PLAN.md — Establish Docker sandbox and language bridge.
+- [x] 01-02-PLAN.md — Pydantic AI Agent integration and HITL approval.
+- [x] 01-03-PLAN.md — Fix HITL architecture (gap closure).
 
 ### Phase 2: Persistence & History
 **Goal**: Users can revisit past interactions and maintain session state across restarts.
@@ -65,7 +66,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Secure Execution | 0/2 | Complete    | 2026-02-24 |
+| 1. Foundation & Secure Execution | 3/3 | Complete    | 2026-02-24 |
 | 2. Persistence & History | 0/0 | Not started | - |
 | 3. Web Dashboard & Security | 0/0 | Not started | - |
 | 4. Workspace & File Management | 0/0 | Not started | - |
