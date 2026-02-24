@@ -187,7 +187,7 @@ async def on_message(message: cl.Message):
                 await msg.send()
             
             # Wait for the full data to be ready (could be CodeExecutionRequest)
-            response = await result.output
+            response = await result.get_output()
             
             # Save new messages
             new_msgs = adapter.dump_python(result.new_messages(), mode='json')
@@ -274,7 +274,7 @@ async def handle_code_approval(request: CodeExecutionRequest, original_msg: cl.M
                     await response_msg.send()
                 
                 # After streaming is done, get full data
-                confirm_result_data = await result.output
+                confirm_result_data = await result.get_output()
                 
                 # Save confirmation messages
                 confirm_new_msgs = adapter.dump_python(result.new_messages(), mode='json')
