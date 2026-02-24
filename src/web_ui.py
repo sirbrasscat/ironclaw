@@ -174,8 +174,14 @@ async def on_message(message: cl.Message):
             message_history=history,
             deps=deps
         ) as result:
-            # Stream the text as it arrives
-            async for text in result.stream_text(debounce_by=0.01):
+            # Stream text tokens if the response is plain text.
+            # For structured outputs (CodeExecutionRequest) stream_text() raises,
+            # so we catch and fall through to handle via result.output below.
+            try:
+                async for text in result.stream_text(debounce_by=0.01):
+                    await msg.stream_token(text)
+            except Exception:
+                pass
                 await msg.stream_token(text)
             
             if msg.content:
@@ -259,8 +265,11 @@ async def handle_code_approval(request: CodeExecutionRequest, original_msg: cl.M
             ) as result:
                 # Stream the final response (likely the same output or a summary)
                 response_msg = cl.Message(content="")
-                async for text in result.stream_text(debounce_by=0.01):
-                    await response_msg.stream_token(text)
+                try:
+                    async for text in result.stream_text(debounce_by=0.01):
+                        await response_msg.stream_token(text)
+                except Exception:
+                    pass
                 
                 if response_msg.content:
                     await response_msg.send()
