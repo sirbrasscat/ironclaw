@@ -28,10 +28,9 @@ async def main():
             if user_input.lower() in ["exit", "quit"]:
                 break
             
-            # Specify result_type during run
             result = await ironclaw_agent.run(
                 user_input, 
-                result_type=CodeExecutionRequest | str
+                output_type=CodeExecutionRequest | str
             )
             
             response = result.data
@@ -48,7 +47,7 @@ async def main():
                     confirm_result = await ironclaw_agent.run(
                         "Confirm the execution.", 
                         message_history=result.all_messages(),
-                        result_type=str
+                        output_type=str
                     )
                     print(f"\nResult:\n{confirm_result.data}")
                 else:

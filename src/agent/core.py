@@ -10,7 +10,7 @@ from src.agent.tools.sandbox import (
 
 # Choose default model based on environment
 if os.environ.get("GEMINI_API_KEY"):
-    default_model = 'google-gla:gemini-1.5-flash'
+    default_model = 'google-gla:gemini-3-flash-preview'
 elif os.environ.get("ANTHROPIC_API_KEY"):
     default_model = 'anthropic:claude-3-5-sonnet-latest'
 else:
