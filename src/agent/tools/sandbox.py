@@ -35,7 +35,7 @@ class SandboxedTool:
         interpreter.computer.languages = [BoundDockerPython, BoundDockerShell]
 
         # Configure Open Interpreter's LLM to use Gemini via LiteLLM
-        interpreter.llm.model = "gemini/gemini-3-flash-preview"
+        interpreter.llm.model = "gemini/gemini-2.5-flash"
         interpreter.llm.api_key = os.environ.get("GEMINI_API_KEY")
         
         # Configure interpreter behavior
@@ -68,7 +68,7 @@ class SandboxedTool:
         )
 
         response = client.models.generate_content(
-            model="gemini-3-flash-preview",
+            model="gemini-2.5-flash",
             contents=prompt,
         )
 

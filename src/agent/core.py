@@ -12,7 +12,7 @@ from src.agent.tools.workspace import list_workspace_files as _list_workspace_fi
 
 # Choose default model based on environment
 if os.environ.get("GEMINI_API_KEY"):
-    default_model = 'google-gla:gemini-3-flash-preview'
+    default_model = 'google-gla:gemini-2.5-flash'
 elif os.environ.get("ANTHROPIC_API_KEY"):
     default_model = 'anthropic:claude-3-5-sonnet-latest'
 else:
