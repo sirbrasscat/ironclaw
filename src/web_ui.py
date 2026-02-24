@@ -47,7 +47,7 @@ load_dotenv()
 def auth_callback(username: str, password: str):
     env_password = os.environ.get("CHAINLIT_PASSWORD", "ironclaw")
     if password == env_password:
-        return cl.User(name=username)
+        return cl.User(identifier=username)
     return None
 
 # DB Manager
@@ -73,7 +73,7 @@ async def on_chat_start():
     await db.initialize_db()
     
     user = cl.user_session.get("user")
-    username = user.name if user else "default"
+    username = user.identifier if user else "default"
     
     # Persistence: Use a username-based session ID
     session_id = f"web-{username}"
