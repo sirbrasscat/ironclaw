@@ -14,6 +14,11 @@ from pydantic_ai.messages import ModelMessage
 
 from src.agent.core import ironclaw_agent, AgentDeps
 from src.agent.tools.sandbox import CodeExecutionRequest
+from src.agent.tools.workspace import (
+    list_workspace_files,
+    get_workspace_snapshot,
+    get_workspace_diff
+)
 from src.database.manager import DatabaseManager
 
 load_dotenv()
@@ -29,6 +34,16 @@ def auth_callback(username: str, password: str):
 # DB Manager
 db = DatabaseManager()
 adapter = TypeAdapter(list[ModelMessage])
+
+@cl.set_starters
+async def set_starters():
+    return [
+        cl.Starter(
+            label="List workspace files",
+            message="/files",
+            icon="https://cdn-icons-png.flaticon.com/512/3767/3767084.png",
+        ),
+    ]
 
 @cl.on_chat_start
 async def on_chat_start():
@@ -94,10 +109,36 @@ async def on_files(files: list[cl.File]):
         new_msgs = adapter.dump_python([upload_notification], mode='json')
         await db.save_messages(session_id, new_msgs)
 
+async def send_file_diff(old_snapshot):
+    new_snapshot = get_workspace_snapshot()
+    diff = get_workspace_diff(old_snapshot, new_snapshot)
+    if diff:
+        elements = [
+            cl.File(name=f, path=f"./workspace/{f}", display="inline")
+            for f in sorted(list(diff))
+        ]
+        await cl.Message(content="Files created or modified:", elements=elements).send()
+
 @cl.on_message
 async def on_message(message: cl.Message):
+    if message.content == "/files":
+        files = list_workspace_files()
+        if not files:
+            await cl.Message(content="No files in workspace.").send()
+            return
+        
+        elements = [
+            cl.File(name=f, path=f"./workspace/{f}", display="inline")
+            for f in sorted(files)
+        ]
+        await cl.Message(content="Current workspace files:", elements=elements).send()
+        return
+
     session_id = cl.user_session.get("session_id")
     history = cl.user_session.get("history", [])
+    
+    # Take a snapshot before execution
+    old_snapshot = get_workspace_snapshot()
     
     # Create an empty message to stream content into
     msg = cl.Message(content="")
@@ -130,11 +171,15 @@ async def on_message(message: cl.Message):
             cl.user_session.set("history", history)
             
             if isinstance(response, CodeExecutionRequest):
-                await handle_code_approval(response, msg, history, session_id)
-            elif not msg.content:
-                # If nothing was streamed but we have data, send it now
-                msg.content = str(response)
-                await msg.send()
+                await handle_code_approval(response, msg, history, session_id, old_snapshot)
+            else:
+                if not msg.content:
+                    # If nothing was streamed but we have data, send it now
+                    msg.content = str(response)
+                    await msg.send()
+                
+                # Check for file changes if no code approval was needed
+                await send_file_diff(old_snapshot)
             
     except Exception as e:
         if not msg.content:
@@ -143,7 +188,7 @@ async def on_message(message: cl.Message):
         else:
             await cl.Message(content=f"\n\nError: {str(e)}").send()
 
-async def handle_code_approval(request: CodeExecutionRequest, original_msg: cl.Message, history, session_id):
+async def handle_code_approval(request: CodeExecutionRequest, original_msg: cl.Message, history, session_id, old_snapshot=None):
     # Display reasoning
     # If original_msg already has content from streaming, we might want to append or use a new message
     content = f"""**Agent Logic:** {request.reasoning}
@@ -212,5 +257,9 @@ async def handle_code_approval(request: CodeExecutionRequest, original_msg: cl.M
                 if not response_msg.content:
                     response_msg.content = f"**Execution Result:**\n{confirm_result_data}"
                     await response_msg.send()
+                
+                # Check for file changes after execution
+                if old_snapshot:
+                    await send_file_diff(old_snapshot)
     else:
         await cl.Message(content="Execution cancelled by user.").send()
