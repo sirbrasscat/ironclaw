@@ -7,6 +7,25 @@ _project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _project_root not in sys.path:
     sys.path.insert(0, _project_root)
 
+# Python 3.14 + nest_asyncio compatibility fix.
+# nest_asyncio replaces asyncio.Task (C impl) with _PyTask (Python impl), but
+# Python 3.14's asyncio.current_task() still reads C-level storage, so it
+# returns None inside patched loops. This patch makes current_task() also
+# check _PyTask._current_tasks so that anyio/sniffio can detect asyncio.
+if sys.version_info >= (3, 14):
+    import asyncio as _asyncio
+    _orig_current_task = _asyncio.current_task
+    def _patched_current_task(loop=None):
+        t = _orig_current_task(loop)
+        if t is None:
+            try:
+                running_loop = _asyncio.get_event_loop()
+                t = _asyncio.tasks._current_tasks.get(running_loop)
+            except RuntimeError:
+                pass
+        return t
+    _asyncio.current_task = _asyncio.tasks.current_task = _patched_current_task
+
 import chainlit as cl
 from dotenv import load_dotenv
 from pydantic import TypeAdapter
