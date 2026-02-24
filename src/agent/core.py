@@ -8,6 +8,7 @@ from src.agent.tools.sandbox import (
     confirm_execution as _confirm_execution,
     CodeExecutionRequest
 )
+from src.agent.tools.workspace import list_workspace_files as _list_workspace_files
 
 # Choose default model based on environment
 if os.environ.get("GEMINI_API_KEY"):
@@ -45,3 +46,13 @@ def confirm_execution(ctx: RunContext[AgentDeps]) -> str:
     """
     on_output = ctx.deps.on_output if ctx.deps else None
     return _confirm_execution(on_output=on_output)
+
+@ironclaw_agent.tool_plain
+def list_workspace_files() -> str:
+    """
+    Returns a list of all files in the current workspace.
+    """
+    files = _list_workspace_files()
+    if not files:
+        return "Workspace is empty."
+    return f"Files in workspace: {', '.join(files)}"
