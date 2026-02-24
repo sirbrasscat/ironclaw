@@ -1,0 +1,7 @@
+pydantic-ai
+open-interpreter
+docker
+sqlalchemy
+aiosqlite
+pydantic-settings
+pytest
