@@ -1,6 +1,6 @@
 import os
 import re
-from typing import List, Union
+from typing import List, Union, Optional, Callable
 from pydantic import BaseModel
 from google import genai
 from interpreter import interpreter
@@ -102,7 +102,7 @@ class SandboxedTool:
             reasoning=reasoning,
         )
 
-    def confirm_execution(self) -> str:
+    def confirm_execution(self, on_output: Optional[Callable[[str], None]] = None) -> str:
         """
         Executes the pending code blocks after human approval.
         """
@@ -119,7 +119,10 @@ class SandboxedTool:
             result_str = ""
             for chunk in output:
                 if chunk.get("type") == "console":
-                    result_str += chunk.get("content", "")
+                    content = chunk.get("content", "")
+                    result_str += content
+                    if on_output and content:
+                        on_output(content)
             
             results.append(f"--- Output ({block.language}) ---\n{result_str}")
         
@@ -139,6 +142,6 @@ def run_system_task(task: str) -> Union[CodeExecutionRequest, str]:
     """Plan a system task and request approval for code execution."""
     return get_sandbox_tool().run_system_task(task)
 
-def confirm_execution() -> str:
+def confirm_execution(on_output: Optional[Callable[[str], None]] = None) -> str:
     """Execute the previously planned and approved system task."""
-    return get_sandbox_tool().confirm_execution()
+    return get_sandbox_tool().confirm_execution(on_output=on_output)

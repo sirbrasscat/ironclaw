@@ -1,6 +1,7 @@
 import os
-from typing import Union
-from pydantic_ai import Agent
+from dataclasses import dataclass
+from typing import Union, Optional, Callable
+from pydantic_ai import Agent, RunContext
 from src.agent.prompts import IRONCLAW_SYSTEM_PROMPT
 from src.agent.tools.sandbox import (
     run_system_task as _run_system_task,
@@ -16,10 +17,16 @@ elif os.environ.get("ANTHROPIC_API_KEY"):
 else:
     default_model = 'openai:gpt-4o'
 
-# Define the agent without result_type in constructor
+@dataclass
+class AgentDeps:
+    on_output: Optional[Callable[[str], None]] = None
+
+# Define the agent with support for structured HITL requests
 ironclaw_agent = Agent(
     default_model, 
     system_prompt=IRONCLAW_SYSTEM_PROMPT,
+    deps_type=AgentDeps,
+    output_type=Union[CodeExecutionRequest, str]
 )
 
 # Register the tools
@@ -31,9 +38,10 @@ def run_system_task(task: str) -> Union[CodeExecutionRequest, str]:
     """
     return _run_system_task(task)
 
-@ironclaw_agent.tool_plain
-def confirm_execution() -> str:
+@ironclaw_agent.tool
+def confirm_execution(ctx: RunContext[AgentDeps]) -> str:
     """
     Executes the pending code blocks that were previously generated and approved.
     """
-    return _confirm_execution()
+    on_output = ctx.deps.on_output if ctx.deps else None
+    return _confirm_execution(on_output=on_output)
