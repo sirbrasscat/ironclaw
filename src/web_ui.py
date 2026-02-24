@@ -69,32 +69,35 @@ async def on_chat_start():
     
     await cl.Message(content=f"Welcome {username}! IronClaw is ready.").send()
 
-@cl.on_files
-async def on_files(files: list[cl.File]):
+
+async def handle_file_uploads(message: cl.Message):
+    """Process any files attached to a message, saving them to the workspace."""
+    from pydantic_ai.messages import ModelRequest, UserPromptPart
+    import datetime
+
+    elements = message.elements or []
+    file_elements = [e for e in elements if isinstance(e, cl.File)]
+    if not file_elements:
+        return
+
     workspace_path = "./workspace"
     if not os.path.exists(workspace_path):
         os.makedirs(workspace_path)
 
-    for file in files:
+    history = cl.user_session.get("history", [])
+    session_id = cl.user_session.get("session_id")
+
+    for file in file_elements:
         target_path = os.path.join(workspace_path, file.name)
-        
-        # Write the file content to the workspace
-        with open(target_path, "wb") as f:
-            if file.content:
+        if file.path and os.path.exists(file.path):
+            import shutil
+            shutil.copy2(file.path, target_path)
+        elif file.content:
+            with open(target_path, "wb") as f:
                 f.write(file.content)
-            else:
-                # If content is not pre-loaded, we might need to read it if it's on disk
-                # In most cases for small files in Chainlit it's in .content
-                pass
-        
-        # Notify the user
+
         await cl.Message(content=f"Uploaded `{file.name}` to `/workspace/{file.name}`").send()
-        
-        # Update agent history with the upload notification
-        history = cl.user_session.get("history", [])
-        from pydantic_ai.messages import ModelRequest, UserPromptPart
-        import datetime
-        
+
         upload_notification = ModelRequest(parts=[
             UserPromptPart(
                 content=f"[SYSTEM NOTIFICATION] User uploaded a file: {file.name}. It is now available at /workspace/{file.name}",
@@ -102,12 +105,10 @@ async def on_files(files: list[cl.File]):
             )
         ])
         history.append(upload_notification)
-        cl.user_session.set("history", history)
-        
-        # Persistence: Save the notification to DB
-        session_id = cl.user_session.get("session_id")
         new_msgs = adapter.dump_python([upload_notification], mode='json')
         await db.save_messages(session_id, new_msgs)
+
+    cl.user_session.set("history", history)
 
 async def send_file_diff(old_snapshot):
     new_snapshot = get_workspace_snapshot()
@@ -121,6 +122,8 @@ async def send_file_diff(old_snapshot):
 
 @cl.on_message
 async def on_message(message: cl.Message):
+    await handle_file_uploads(message)
+
     if message.content == "/files":
         files = list_workspace_files()
         if not files:
