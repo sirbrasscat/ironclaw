@@ -1,7 +1,8 @@
 import os
-import json
-from typing import List, Dict, Any, Union
+import re
+from typing import List, Union
 from pydantic import BaseModel
+from google import genai
 from interpreter import interpreter
 from src.sandbox.manager import SandboxManager
 from src.sandbox.languages import DockerPython, DockerShell
@@ -20,14 +21,28 @@ class SandboxedTool:
         self.manager = SandboxManager()
         self.container = self.manager.get_or_create_container()
         
-        # Reset and configure interpreter
-        interpreter.computer.languages = [
-            DockerPython(self.container),
-            DockerShell(self.container)
-        ]
+        # Create language classes (not instances) with container baked in
+        container = self.container
+        
+        class BoundDockerPython(DockerPython):
+            def __init__(self):
+                super().__init__(container)
+
+        class BoundDockerShell(DockerShell):
+            def __init__(self):
+                super().__init__(container)
+
+        interpreter.computer.languages = [BoundDockerPython, BoundDockerShell]
+
+        # Configure Open Interpreter's LLM to use Gemini via LiteLLM
+        interpreter.llm.model = "gemini/gemini-3-flash-preview"
+        interpreter.llm.api_key = os.environ.get("GEMINI_API_KEY")
         
         # Configure interpreter behavior
-        interpreter.auto_run = False  # Mandatory HITL
+        # auto_run=True so OI's own HITL loop doesn't interfere when
+        # confirm_execution() calls interpreter.computer.run() directly.
+        # Our HITL is enforced at the Pydantic AI layer via CodeExecutionRequest.
+        interpreter.auto_run = True
         interpreter.offline = False
         interpreter.safe_mode = False
         
@@ -37,34 +52,54 @@ class SandboxedTool:
     def run_system_task(self, task: str) -> Union[CodeExecutionRequest, str]:
         """
         Generates code for a natural language task but does NOT execute it.
-        Returns a CodeExecutionRequest for human approval.
+        Uses the google-genai SDK directly so code generation is decoupled from
+        OI's own HITL loop. Returns a CodeExecutionRequest for human approval.
         """
-        # Clear previous pending blocks
         self.pending_blocks = []
-        
-        # We use chat to get the plan and code
-        messages = interpreter.chat(task)
-        
-        code_blocks = []
-        reasoning = ""
-        
-        for msg in messages:
-            if msg.get("role") == "assistant":
-                if msg.get("type") == "message":
-                    reasoning += msg.get("content", "") + "\n"
-                elif msg.get("type") == "code":
-                    code_blocks.append(CodeBlock(
-                        code=msg.get("code", ""),
-                        language=msg.get("language", "")
-                    ))
-        
+
+        api_key = os.environ.get("GEMINI_API_KEY")
+        client = genai.Client(api_key=api_key)
+
+        prompt = (
+            f"Generate shell or Python code to accomplish the following task:\n\n"
+            f"{task}\n\n"
+            "Return ONLY the code blocks with proper language fences "
+            "(e.g. ```python or ```bash), no explanations before or after."
+        )
+
+        response = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=prompt,
+        )
+
+        text = response.text or ""
+
+        # Extract fenced code blocks (```lang\n...\n```)
+        code_blocks: List[CodeBlock] = []
+        pattern = re.compile(r"```(\w+)?\n(.*?)```", re.DOTALL)
+        for match in pattern.finditer(text):
+            lang = match.group(1) or "shell"
+            code = match.group(2).strip()
+            # Normalise language identifiers to what OI's computer understands
+            if lang in ("sh", "bash", "shell", "zsh"):
+                lang = "shell"
+            elif lang in ("py", "python"):
+                lang = "python"
+            if code:
+                code_blocks.append(CodeBlock(code=code, language=lang))
+
+        # Fallback: no fences found — treat entire response as shell code
+        if not code_blocks and text.strip():
+            code_blocks.append(CodeBlock(code=text.strip(), language="shell"))
+
         if not code_blocks:
-            return reasoning or "No code was generated for this task."
+            return "No code was generated for this task."
 
         self.pending_blocks = code_blocks
+        reasoning = f"To accomplish: {task}"
         return CodeExecutionRequest(
             blocks=code_blocks,
-            reasoning=reasoning.strip()
+            reasoning=reasoning,
         )
 
     def confirm_execution(self) -> str:
