@@ -1,4 +1,12 @@
 import os
+import sys
+
+# Ensure project root is in sys.path so `from src.X` imports work
+# regardless of how this script is invoked (e.g. `python3 src/main.py`)
+_project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
+
 from dotenv import load_dotenv
 # Load BEFORE importing src.agent.core
 load_dotenv()
