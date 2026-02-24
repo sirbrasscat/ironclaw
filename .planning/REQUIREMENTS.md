@@ -40,18 +40,18 @@
 
 | Req ID | Phase | Plan | Status |
 |--------|-------|------|--------|
-| ENG-01 | — | — | Pending |
-| ENG-02 | — | — | Pending |
-| ENG-03 | — | — | Pending |
-| WEB-01 | — | — | Pending |
-| WEB-02 | — | — | Pending |
-| WEB-03 | — | — | Pending |
-| MSG-01 | — | — | Pending |
-| MSG-02 | — | — | Pending |
-| SEC-01 | — | — | Pending |
-| SEC-02 | — | — | Pending |
-| SEC-03 | — | — | Pending |
-| SEC-04 | — | — | Pending |
+| ENG-01 | Phase 1 | — | Pending |
+| ENG-02 | Phase 1 | — | Pending |
+| ENG-03 | Phase 4 | — | Pending |
+| WEB-01 | Phase 3 | — | Pending |
+| WEB-02 | Phase 3 | — | Pending |
+| WEB-03 | Phase 4 | — | Pending |
+| MSG-01 | Phase 5 | — | Pending |
+| MSG-02 | Phase 5 | — | Pending |
+| SEC-01 | Phase 1 | — | Pending |
+| SEC-02 | Phase 3 | — | Pending |
+| SEC-03 | Phase 2 | — | Pending |
+| SEC-04 | Phase 1 | — | Pending |
 
 ---
 *Last updated: 2026-02-23*
