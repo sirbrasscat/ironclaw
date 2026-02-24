@@ -32,6 +32,10 @@ adapter = TypeAdapter(list[ModelMessage])
 
 @cl.on_chat_start
 async def on_chat_start():
+    # Ensure workspace directory exists
+    if not os.path.exists("./workspace"):
+        os.makedirs("./workspace")
+    
     await db.initialize_db()
     
     user = cl.user_session.get("user")
@@ -49,6 +53,46 @@ async def on_chat_start():
     cl.user_session.set("history", history)
     
     await cl.Message(content=f"Welcome {username}! IronClaw is ready.").send()
+
+@cl.on_files
+async def on_files(files: list[cl.File]):
+    workspace_path = "./workspace"
+    if not os.path.exists(workspace_path):
+        os.makedirs(workspace_path)
+
+    for file in files:
+        target_path = os.path.join(workspace_path, file.name)
+        
+        # Write the file content to the workspace
+        with open(target_path, "wb") as f:
+            if file.content:
+                f.write(file.content)
+            else:
+                # If content is not pre-loaded, we might need to read it if it's on disk
+                # In most cases for small files in Chainlit it's in .content
+                pass
+        
+        # Notify the user
+        await cl.Message(content=f"Uploaded `{file.name}` to `/workspace/{file.name}`").send()
+        
+        # Update agent history with the upload notification
+        history = cl.user_session.get("history", [])
+        from pydantic_ai.messages import ModelRequest, UserPromptPart
+        import datetime
+        
+        upload_notification = ModelRequest(parts=[
+            UserPromptPart(
+                content=f"[SYSTEM NOTIFICATION] User uploaded a file: {file.name}. It is now available at /workspace/{file.name}",
+                timestamp=datetime.datetime.now(datetime.timezone.utc)
+            )
+        ])
+        history.append(upload_notification)
+        cl.user_session.set("history", history)
+        
+        # Persistence: Save the notification to DB
+        session_id = cl.user_session.get("session_id")
+        new_msgs = adapter.dump_python([upload_notification], mode='json')
+        await db.save_messages(session_id, new_msgs)
 
 @cl.on_message
 async def on_message(message: cl.Message):
@@ -75,7 +119,7 @@ async def on_message(message: cl.Message):
                 await msg.send()
             
             # Wait for the full data to be ready (could be CodeExecutionRequest)
-            response = await result.data
+            response = await result.output
             
             # Save new messages
             new_msgs = adapter.dump_python(result.new_messages(), mode='json')
@@ -155,7 +199,7 @@ async def handle_code_approval(request: CodeExecutionRequest, original_msg: cl.M
                     await response_msg.send()
                 
                 # After streaming is done, get full data
-                confirm_result_data = await result.data
+                confirm_result_data = await result.output
                 
                 # Save confirmation messages
                 confirm_new_msgs = adapter.dump_python(result.new_messages(), mode='json')
