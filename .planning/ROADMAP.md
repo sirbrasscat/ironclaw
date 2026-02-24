@@ -31,7 +31,9 @@
 **Success Criteria** (what must be TRUE):
   1. User sees their conversation history automatically reloaded upon starting a new session.
   2. Session metadata and chat logs are stored in a local SQLite database using SQLAlchemy.
-**Plans**: TBD
+**Plans**:
+- [x] 02-01-PLAN.md — Foundation Persistence Layer (SQLAlchemy + SQLite).
+- [ ] 02-02-PLAN.md — CLI Loop Integration for automatic history recovery.
 
 ### Phase 3: Web Dashboard & Security
 **Goal**: Users have a secure, interactive dashboard for primary control and real-time feedback.
@@ -41,7 +43,9 @@
   1. User is prompted for a password before accessing the web interface.
   2. User can chat with the agent via the web UI and see real-time streaming of code execution blocks.
   3. System and interpreter logs are visible within the UI as the agent works.
-**Plans**: TBD
+**Plans**:
+- [x] 03-01-PLAN.md — Establish Chainlit environment with Auth.
+- [ ] 03-02-PLAN.md — Real-time Streaming & Execution Feedback.
 
 ### Phase 4: Workspace & File Management
 **Goal**: Users can share, manage, and download files within the agent's workspace.
@@ -51,7 +55,9 @@
   1. User can upload a file via the UI and the agent can immediately interact with it.
   2. User can view a file list in the UI showing the current contents of the agent's workspace.
   3. User can download any files created or modified by the agent directly from the UI.
-**Plans**: TBD
+**Plans**: 2 plans
+- [x] 04-01-PLAN.md — Workspace File Management & bidirectional sync.
+- [ ] 04-02-PLAN.md — UI File Explorer & Downloads.
 
 ### Phase 5: Telegram Bridge
 **Goal**: Users can control the agent remotely via Telegram with a smooth experience.
@@ -67,7 +73,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Secure Execution | 3/3 | Complete    | 2026-02-24 |
-| 2. Persistence & History | 0/0 | Not started | - |
-| 3. Web Dashboard & Security | 0/0 | Not started | - |
-| 4. Workspace & File Management | 0/0 | Not started | - |
+| 2. Persistence & History | 1/2 | In Progress | - |
+| 3. Web Dashboard & Security | 1/2 | In Progress | - |
+| 4. Workspace & File Management | 1/2 | In Progress | - |
 | 5. Telegram Bridge | 0/0 | Not started | - |
