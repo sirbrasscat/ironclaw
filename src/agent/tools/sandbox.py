@@ -1,7 +1,8 @@
 import os
 import re
+import json
 from typing import List, Union, Optional, Callable
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from google import genai
 import ollama as ollama_lib
 from interpreter import interpreter
@@ -16,7 +17,19 @@ class CodeBlock(BaseModel):
 class CodeExecutionRequest(BaseModel):
     status: str = "PENDING_APPROVAL"
     blocks: List[CodeBlock]
-    reasoning: str
+    reasoning: str = ""
+
+    @model_validator(mode='before')
+    @classmethod
+    def _coerce_blocks_string(cls, values):
+        """Small Ollama models sometimes JSON-encode `blocks` as a string.
+        Decode it back to a list so validation doesn't fail."""
+        if isinstance(values, dict) and isinstance(values.get('blocks'), str):
+            try:
+                values['blocks'] = json.loads(values['blocks'])
+            except (json.JSONDecodeError, ValueError):
+                pass
+        return values
 
 class SandboxedTool:
     def __init__(self):
@@ -35,17 +48,14 @@ class SandboxedTool:
                 super().__init__(container)
 
         interpreter.computer.languages = [BoundDockerPython, BoundDockerShell]
+        # OI used as execution engine only — LLM config not needed
 
-        # Configure Open Interpreter's LLM to use Gemini via LiteLLM
-        interpreter.llm.model = "gemini/gemini-2.5-flash"
-        interpreter.llm.api_key = os.environ.get("GEMINI_API_KEY")
-        
         # Configure interpreter behavior
         # auto_run=True so OI's own HITL loop doesn't interfere when
         # confirm_execution() calls interpreter.computer.run() directly.
         # Our HITL is enforced at the Pydantic AI layer via CodeExecutionRequest.
         interpreter.auto_run = True
-        interpreter.offline = False
+        interpreter.offline = True
         interpreter.safe_mode = False
         
         # To store the last generated blocks for confirmation
