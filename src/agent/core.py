@@ -2,7 +2,10 @@ import os
 from dataclasses import dataclass
 from typing import Union, Optional, Callable
 from pydantic_ai import Agent, RunContext
+from pydantic_ai.providers.ollama import OllamaProvider
+from pydantic_ai.models.openai import OpenAIModel
 from src.agent.prompts import IRONCLAW_SYSTEM_PROMPT
+from src.agent.provider import get_provider_config
 from src.agent.tools.sandbox import (
     run_system_task as _run_system_task,
     confirm_execution as _confirm_execution,
@@ -10,13 +13,23 @@ from src.agent.tools.sandbox import (
 )
 from src.agent.tools.workspace import list_workspace_files as _list_workspace_files
 
-# Choose default model based on environment
-if os.environ.get("GEMINI_API_KEY"):
-    default_model = 'google-gla:gemini-2.5-flash'
-elif os.environ.get("ANTHROPIC_API_KEY"):
+# Resolve provider config and select model
+_provider_config = get_provider_config()
+
+if _provider_config.provider == "ollama":
+    # Pydantic-ai uses OllamaProvider (OpenAI-compatible) for Ollama backends
+    _ollama_provider = OllamaProvider(base_url=_provider_config.ollama_base_url)
+    default_model = OpenAIModel(
+        _provider_config.ollama_agent_model,
+        provider=_ollama_provider,
+    )
+elif _provider_config.provider == "anthropic":
     default_model = 'anthropic:claude-3-5-sonnet-latest'
-else:
+elif _provider_config.provider == "openai":
     default_model = 'openai:gpt-4o'
+else:
+    # "gemini" (default)
+    default_model = 'google-gla:gemini-2.5-flash'
 
 @dataclass
 class AgentDeps:
@@ -24,7 +37,7 @@ class AgentDeps:
 
 # Define the agent with support for structured HITL requests
 ironclaw_agent = Agent(
-    default_model, 
+    default_model,
     system_prompt=IRONCLAW_SYSTEM_PROMPT,
     deps_type=AgentDeps,
     output_type=Union[CodeExecutionRequest, str]
