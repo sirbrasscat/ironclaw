@@ -226,21 +226,19 @@ async def on_message(message: cl.Message):
                     await msg.stream_token(text)
             except Exception:
                 pass  # structured output — handled via result.output below
-            
-            if msg.content:
-                await msg.send()
-            
-            # Wait for the full data to be ready (could be CodeExecutionRequest)
+
+            # Determine response type BEFORE sending msg so we can suppress
+            # the streamed text when code approval will be shown instead.
             response = await result.get_output()
-            
+
             # Save new messages
             new_msgs = adapter.dump_python(result.new_messages(), mode='json')
             await db.save_messages(session_id, new_msgs)
-            
+
             # Update local history
             history = result.all_messages()
             cl.user_session.set("history", history)
-            
+
             # Smaller Ollama models may return a plain string even after run_system_task
             # generates code, because they don't relay the CodeExecutionRequest as
             # structured output. Fall back to the singleton's pending_blocks if any.
@@ -253,10 +251,12 @@ async def on_message(message: cl.Message):
                     )
 
             if isinstance(response, CodeExecutionRequest):
-                await handle_code_approval(response, msg, history, session_id, old_snapshot)
+                # Don't show the streamed text — the approval dialog presents the code.
+                await handle_code_approval(response, cl.Message(content=""), history, session_id, old_snapshot)
             else:
-                if not msg.content:
-                    # If nothing was streamed but we have data, send it now
+                if msg.content:
+                    await msg.send()
+                else:
                     msg.content = str(response)
                     await msg.send()
                 
@@ -302,12 +302,12 @@ async def handle_code_approval(request: CodeExecutionRequest, original_msg: cl.M
     res = await cl.AskActionMessage(
         content="Approve execution in the sandboxed environment?",
         actions=[
-            cl.Action(name="approve", value="yes", label="✅ Approve"),
-            cl.Action(name="reject", value="no", label="❌ Reject", button_variant="danger"),
+            cl.Action(name="approve", label="✅ Approve", payload={"value": "yes"}),
+            cl.Action(name="reject", label="❌ Reject", payload={"value": "no"}),
         ],
     ).send()
 
-    if res and res.get("value") == "yes":
+    if res and res.get("payload", {}).get("value") == "yes":
         # Create a step for execution logs
         async with cl.Step(name="Docker Execution") as step:
             def on_output(content: str):
