@@ -195,14 +195,24 @@ async def on_message(message: cl.Message):
     
     # Take a snapshot before execution
     old_snapshot = get_workspace_snapshot()
-    
+
     # Create an empty message to stream content into
     msg = cl.Message(content="")
-    
+
     try:
-        # Use AgentDeps even if not strictly needed here for the first call
-        deps = AgentDeps()
-        
+        # For Ollama, stream code-generation tokens into a dedicated step.
+        # The step is created eagerly so the on_output callback can reference it.
+        _cfg = get_provider_config()
+        if _cfg.provider == "ollama":
+            code_gen_step = cl.Step(name="⚙ Generating code...")
+            await code_gen_step.__aenter__()
+            def _on_output(token: str):
+                cl.run_sync(code_gen_step.stream_token(token))
+            deps = AgentDeps(on_output=_on_output)
+        else:
+            code_gen_step = None
+            deps = AgentDeps()
+
         async with ironclaw_agent.run_stream(
             message.content,
             message_history=history,
@@ -248,6 +258,9 @@ async def on_message(message: cl.Message):
             await msg.send()
         else:
             await cl.Message(content=f"\n\nError: {str(e)}").send()
+    finally:
+        if code_gen_step is not None:
+            await code_gen_step.__aexit__(None, None, None)
 
 async def handle_code_approval(request: CodeExecutionRequest, original_msg: cl.Message, history, session_id, old_snapshot=None):
     # Display reasoning
