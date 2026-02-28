@@ -47,13 +47,14 @@ ironclaw_agent = Agent(
 )
 
 # Register the tools
-@ironclaw_agent.tool_plain
-def run_system_task(task: str) -> Union[CodeExecutionRequest, str]:
+@ironclaw_agent.tool
+def run_system_task(ctx: RunContext[AgentDeps], task: str) -> Union[CodeExecutionRequest, str]:
     """
     Plans a natural language task in the sandboxed environment and generates code.
     Use this for any system operations. It will return a request for approval.
     """
-    return _run_system_task(task)
+    on_output = ctx.deps.on_output if ctx.deps else None
+    return _run_system_task(task, on_output=on_output)
 
 @ironclaw_agent.tool
 def confirm_execution(ctx: RunContext[AgentDeps]) -> str:

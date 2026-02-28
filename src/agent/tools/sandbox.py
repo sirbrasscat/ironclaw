@@ -176,9 +176,9 @@ def get_sandbox_tool():
         _sandbox_tool = SandboxedTool()
     return _sandbox_tool
 
-def run_system_task(task: str) -> Union[CodeExecutionRequest, str]:
+def run_system_task(task: str, on_output: Optional[Callable[[str], None]] = None) -> Union[CodeExecutionRequest, str]:
     """Plan a system task and request approval for code execution."""
-    return get_sandbox_tool().run_system_task(task)
+    return get_sandbox_tool().run_system_task(task, on_output=on_output)
 
 def confirm_execution(on_output: Optional[Callable[[str], None]] = None) -> str:
     """Execute the previously planned and approved system task."""
