@@ -6,6 +6,7 @@
 - [x] **Phase 2: Persistence & History** - Implement SQLAlchemy/SQLite persistence for sessions and conversations. (completed 2026-02-24)
 - [x] **Phase 3: Web Dashboard & Security** - Build the primary Chainlit interface with password authentication. (completed 2026-02-24)
 - [x] **Phase 4: Workspace & File Management** - Add file upload/download and UI-based file management capabilities. (completed 2026-02-24)
+- [ ] **Phase 5: Local Model Support via Ollama** - Allow running IronClaw with a locally-hosted Ollama model. (in progress)
 
 ## Phase Details
 
@@ -66,4 +67,17 @@
 | 2. Persistence & History | 2/2 | Complete   | 2026-02-28 |
 | 3. Web Dashboard & Security | 2/2 | Complete    | 2026-02-24 |
 | 4. Workspace & File Management | 2/2 | Complete    | 2026-02-24 |
+| 5. Local Model Support via Ollama | 1/3 | In Progress | —          |
 
+
+### Phase 5: Local model support via Ollama
+
+**Goal:** Allow users to run IronClaw with a locally-hosted Ollama model instead of cloud APIs.
+**Requirements**: ENG-05
+**Depends on:** Phase 4
+**Plans:** 3 plans
+
+Plans:
+- [x] 05-01-PLAN.md — Provider config module (ProviderConfig, health check, model resolution)
+- [ ] 05-02-PLAN.md — Agent core integration (wire ProviderConfig into core.py model selection)
+- [ ] 05-03-PLAN.md — Sandbox codegen integration (wire ProviderConfig into sandbox.py codegen)
