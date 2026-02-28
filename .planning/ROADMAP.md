@@ -8,7 +8,7 @@
 - [x] **Phase 4: Workspace & File Management** - Add file upload/download and UI-based file management capabilities. (completed 2026-02-24)
 - [x] **Phase 5: Local Model Support via Ollama** - Allow running IronClaw with a locally-hosted Ollama model. (in progress) (completed 2026-02-28)
 - [ ] **Phase 6: Phase 4 Workspace Verification** - Formally verify Phase 4 workspace features via UAT and create VERIFICATION.md. (gap closure)
-- [ ] **Phase 7: Ollama CLI Streaming Fix** - Enable progressive token streaming in CLI mode and clean up hardcoded model string. (gap closure)
+- [x] **Phase 7: Ollama CLI Streaming Fix** - Enable progressive token streaming in CLI mode and clean up hardcoded model string. (gap closure) (completed 2026-02-28)
 
 ## Phase Details
 
@@ -71,7 +71,7 @@
 | 4. Workspace & File Management | 2/2 | Complete    | 2026-02-24 |
 | 5. Local Model Support via Ollama | 4/4 | Complete   | 2026-02-28 |
 | 6. Phase 4 Workspace Verification | 1/1 | Complete | 2026-02-28 |
-| 7. Ollama CLI Streaming Fix | 0/1 | Not started | - |
+| 7. Ollama CLI Streaming Fix | 1/1 | Complete   | 2026-02-28 |
 
 
 ### Phase 5: Local model support via Ollama

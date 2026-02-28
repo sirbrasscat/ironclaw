@@ -3,25 +3,25 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-02-28T10:24:23.351Z"
+last_updated: "2026-02-28T10:42:55Z"
 progress:
   total_phases: 7
-  completed_phases: 6
-  total_plans: 14
-  completed_plans: 14
+  completed_phases: 7
+  total_plans: 15
+  completed_plans: 15
 ---
 
 # Project State: IronClaw Agent System
 
 ## Project Reference
 **Core Value**: Empowering users with a proactive, system-aware AI assistant that can be controlled from anywhere safely.
-**Current Focus**: Phase 07 — Ollama CLI Streaming Fix (next).
+**Current Focus**: Phase 07 — Ollama CLI Streaming Fix (complete).
 
 ## Current Position
-**Phase**: 06-phase4-workspace-verification
+**Phase**: 07-ollama-cli-streaming-fix
 **Plan**: 01 (complete)
-**Status**: Phase 06 complete — 04-UAT.md (4/5 pass) and 04-VERIFICATION.md written; ENG-03 partial, WEB-03 satisfied
-**Progress**: [██████████████████████] 100% (14/14 plans)
+**Status**: Phase 07 complete — GAP-01 and GAP-02 closed; ENG-05 fully complete end-to-end
+**Progress**: [██████████████████████] 100% (15/15 plans)
 
 ## Performance Metrics
 - **Requirement Coverage**: ENG-05 complete
@@ -47,6 +47,7 @@ progress:
 - [Phase 05-03]: provider_banner() in web_ui.py welcome message; __main__ guard updated to allow PROVIDER=ollama without cloud API keys; AskActionMessage payload via .get() defensively.
 - [Phase 05-04]: @tool_plain -> @tool for run_system_task so RunContext passes on_output callback to SandboxedTool.run_system_task(); module-level wrapper updated to accept and forward on_output; Ollama code-gen now streams tokens progressively.
 - [Phase 06-01]: ENG-03 partial (bind-mount works; system prompt lacks /workspace/ guidance for uploaded files). WEB-03 satisfied (upload, /files, auto-discovery all pass). Test 3 failure is a prompt engineering gap, not infrastructure defect.
+- [Phase 07-01]: AgentDeps callback defined once before the while loop — reused across all CLI iterations. Trailing print() added after planning run only. interpreter.offline = True — OI used as execution engine only, no LLM config needed. Closes GAP-01 and GAP-02; ENG-05 fully complete.
 
 ### Roadmap Evolution
 - Phase 5 added: Local model support via Ollama
@@ -60,10 +61,11 @@ progress:
 - [x] Execute Phase 5-03: Startup integration (provider banner + Ollama health check in main.py and web_ui.py).
 - [x] Execute Phase 5-04: Gap closure — wire on_output streaming callback into run_system_task; update ENG-05 traceability row.
 - [x] Execute Phase 6-01: Run Phase 4 UAT (4/5 pass), create 04-VERIFICATION.md (ENG-03 partial, WEB-03 satisfied).
+- [x] Execute Phase 7-01: Wire AgentDeps into main.py CLI loop; remove dead OI LLM config; set interpreter.offline=True. GAP-01 and GAP-02 closed.
 
 ### Blockers
 - None.
 
 ## Session Continuity
-**Last Action**: Executed 06-01. Ran 5 Phase 4 UAT tests (4 pass, 1 fail). Created 04-UAT.md and 04-VERIFICATION.md. ENG-03 partial (system prompt gap for /workspace/ path guidance); WEB-03 satisfied.
-**Next Step**: Phase 07 — Ollama CLI Streaming Fix (pass AgentDeps to ironclaw_agent.run() in main.py; remove hardcoded model string from SandboxedTool).
+**Last Action**: Executed 07-01. Wired AgentDeps(on_output=callback) into both ironclaw_agent.run() calls in main.py. Removed dead interpreter.llm config from SandboxedTool.__init__; set interpreter.offline=True. Closes GAP-01 and GAP-02; ENG-05 fully complete.
+**Next Step**: v1.0 milestone complete — all plans executed.
