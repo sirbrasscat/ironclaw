@@ -38,6 +38,7 @@ from src.agent.tools.workspace import (
     get_workspace_snapshot,
     get_workspace_diff
 )
+from src.agent.provider import get_provider_config, check_ollama_health, get_missing_models, provider_banner
 from src.database.manager import DatabaseManager
 
 load_dotenv()
@@ -86,7 +87,40 @@ async def on_chat_start():
     history = adapter.validate_python(history_dicts) if history_dicts else []
     cl.user_session.set("history", history)
     
-    await cl.Message(content=f"Welcome {username}! IronClaw is ready.").send()
+    _cfg = get_provider_config()
+    _banner = provider_banner(_cfg)
+    await cl.Message(content=f"Welcome {username}! IronClaw is ready.\n\n{_banner}").send()
+
+    if _cfg.provider == "ollama":
+        reachable, pulled_models = await check_ollama_health(_cfg)
+        if not reachable:
+            action_res = await cl.AskActionMessage(
+                content=(
+                    f"Ollama is unreachable at {_cfg.ollama_base_url}. "
+                    "Fall back to a cloud provider, or abort?"
+                ),
+                actions=[
+                    cl.Action(name="fallback", label="Fall back to cloud", payload={"choice": "fallback"}),
+                    cl.Action(name="abort", label="Abort session", payload={"choice": "abort"}),
+                ],
+            ).send()
+            choice = (action_res.get("payload", {}) if action_res else {}).get("choice", "abort")
+            if choice == "fallback":
+                import os as _os
+                _os.environ.pop("PROVIDER", None)
+                _cfg = get_provider_config()
+                await cl.Message(content=f"Switched provider. {provider_banner(_cfg)}").send()
+            else:
+                await cl.Message(content="Session aborted. Start Ollama and refresh.").send()
+                return
+        else:
+            missing = get_missing_models(_cfg, pulled_models)
+            if missing:
+                pull_cmds = "\n".join(f"  ollama pull {m}" for m in missing)
+                await cl.Message(
+                    content=f"Required models not pulled. Run:\n```\n{pull_cmds}\n```\nThen refresh."
+                ).send()
+                return
 
 
 async def handle_file_uploads(message: cl.Message):
