@@ -7,6 +7,8 @@
 - [x] **Phase 3: Web Dashboard & Security** - Build the primary Chainlit interface with password authentication. (completed 2026-02-24)
 - [x] **Phase 4: Workspace & File Management** - Add file upload/download and UI-based file management capabilities. (completed 2026-02-24)
 - [x] **Phase 5: Local Model Support via Ollama** - Allow running IronClaw with a locally-hosted Ollama model. (in progress) (completed 2026-02-28)
+- [ ] **Phase 6: Phase 4 Workspace Verification** - Formally verify Phase 4 workspace features via UAT and create VERIFICATION.md. (gap closure)
+- [ ] **Phase 7: Ollama CLI Streaming Fix** - Enable progressive token streaming in CLI mode and clean up hardcoded model string. (gap closure)
 
 ## Phase Details
 
@@ -67,7 +69,9 @@
 | 2. Persistence & History | 2/2 | Complete   | 2026-02-28 |
 | 3. Web Dashboard & Security | 2/2 | Complete    | 2026-02-24 |
 | 4. Workspace & File Management | 2/2 | Complete    | 2026-02-24 |
-| 5. Local Model Support via Ollama | 3/3 | Complete   | 2026-02-28 |
+| 5. Local Model Support via Ollama | 4/4 | Complete   | 2026-02-28 |
+| 6. Phase 4 Workspace Verification | 0/1 | Not started | - |
+| 7. Ollama CLI Streaming Fix | 0/1 | Not started | - |
 
 
 ### Phase 5: Local model support via Ollama
@@ -82,3 +86,25 @@ Plans:
 - [x] 05-02-PLAN.md — Agent core integration (wire ProviderConfig into core.py and sandbox.py)
 - [x] 05-03-PLAN.md — Startup integration (provider_banner, health check display, error handling in main.py/web_ui.py)
 - [x] 05-04-PLAN.md — Gap closure: wire on_output streaming callback into run_system_task; update ENG-05 traceability
+
+### Phase 6: Phase 4 Workspace Verification
+**Goal:** Formally verify Phase 4 workspace file management features via UAT (5 tests) and create 04-VERIFICATION.md to close the formal verification gap.
+**Depends on:** Phase 4
+**Requirements**: ENG-03, WEB-03
+**Gap Closure:** Closes ENG-03 and WEB-03 partial status from v1.0 audit (missing VERIFICATION.md, 0/5 UAT tests run)
+**Success Criteria** (what must be TRUE):
+  1. All 5 UAT tests in 04-UAT.md have results (pass/fail, not pending).
+  2. 04-VERIFICATION.md exists with formal sign-off on ENG-03 and WEB-03.
+**Plans**:
+- [ ] 06-01-PLAN.md — Run Phase 4 UAT and create VERIFICATION.md.
+
+### Phase 7: Ollama CLI Streaming Fix
+**Goal:** Enable progressive token streaming for Ollama in CLI mode and remove the hardcoded cloud model string from SandboxedTool.
+**Depends on:** Phase 5
+**Requirements**: ENG-05
+**Gap Closure:** Closes GAP-01 (main.py missing deps=AgentDeps()) and GAP-02 (hardcoded interpreter.llm.model) from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. Running `python3 src/main.py` with PROVIDER=ollama streams tokens progressively as they are generated.
+  2. SandboxedTool.__init__ no longer hardcodes interpreter.llm.model to a cloud model string.
+**Plans**:
+- [ ] 07-01-PLAN.md — Pass AgentDeps to ironclaw_agent.run() in main.py; clean up hardcoded model string.
