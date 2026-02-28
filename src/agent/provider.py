@@ -117,7 +117,9 @@ def get_missing_models(config: ProviderConfig, pulled_models: list[str]) -> list
     """Return list of required model names not present in pulled_models.
 
     Checks both ollama_agent_model and ollama_codegen_model (deduplicated).
-    Matching is exact string equality (e.g. "llama3.2", "mistral:7b").
+    Matching: exact string equality first; if a required name has no tag (no
+    colon), also matches pulled models whose base name (before ':') equals it.
+    This handles Ollama's convention of storing "llama3.2" as "llama3.2:latest".
 
     Args:
         config: Resolved ProviderConfig.
@@ -127,9 +129,20 @@ def get_missing_models(config: ProviderConfig, pulled_models: list[str]) -> list
         Sorted list of model names that are required but not pulled.
     """
     required = {config.ollama_agent_model, config.ollama_codegen_model}
-    pulled_set = set(pulled_models)
-    missing = sorted(required - pulled_set)
-    return missing
+    # Build a set of base names from pulled models (e.g. "llama3.2:latest" → "llama3.2")
+    pulled_bases = {m.split(":")[0] for m in pulled_models}
+    pulled_full = set(pulled_models)
+
+    missing = []
+    for model in required:
+        base = model.split(":")[0]
+        tag = model[len(base):]  # "" if no tag, else e.g. ":7b"
+        if model in pulled_full:
+            continue  # exact match
+        if not tag and base in pulled_bases:
+            continue  # "llama3.2" matches "llama3.2:latest"
+        missing.append(model)
+    return sorted(missing)
 
 
 def provider_banner(config: ProviderConfig) -> str:
