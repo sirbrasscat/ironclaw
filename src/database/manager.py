@@ -38,8 +38,9 @@ class DatabaseManager:
         """
         async with self.async_session() as session:
             for msg_data in messages:
-                # Pydantic AI ModelMessage has a 'role' attribute or key
-                role = msg_data.get('role', 'unknown')
+                # Pydantic AI ModelMessage uses 'kind' (request/response)
+                # but we'll map it to role for consistency or use kind if role is missing
+                role = msg_data.get('role', msg_data.get('kind', 'unknown'))
                 db_msg = ChatMessage(
                     session_id=session_id,
                     role=role,
