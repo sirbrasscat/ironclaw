@@ -3,9 +3,11 @@ import re
 from typing import List, Union, Optional, Callable
 from pydantic import BaseModel
 from google import genai
+import ollama as ollama_lib
 from interpreter import interpreter
 from src.sandbox.manager import SandboxManager
 from src.sandbox.languages import DockerPython, DockerShell
+from src.agent.provider import get_provider_config, OllamaUnavailableError
 
 class CodeBlock(BaseModel):
     code: str
@@ -49,32 +51,13 @@ class SandboxedTool:
         # To store the last generated blocks for confirmation
         self.pending_blocks: List[CodeBlock] = []
 
-    def run_system_task(self, task: str) -> Union[CodeExecutionRequest, str]:
+    def _parse_code_blocks(self, text: str) -> List[CodeBlock]:
+        """Extract fenced code blocks from LLM response text.
+
+        Parses ```lang\\n...\\n``` fences, normalises language identifiers to
+        what Open Interpreter's computer understands ("shell" or "python"), and
+        falls back to treating the whole response as shell if no fences found.
         """
-        Generates code for a natural language task but does NOT execute it.
-        Uses the google-genai SDK directly so code generation is decoupled from
-        OI's own HITL loop. Returns a CodeExecutionRequest for human approval.
-        """
-        self.pending_blocks = []
-
-        api_key = os.environ.get("GEMINI_API_KEY")
-        client = genai.Client(api_key=api_key)
-
-        prompt = (
-            f"Generate shell or Python code to accomplish the following task:\n\n"
-            f"{task}\n\n"
-            "Return ONLY the code blocks with proper language fences "
-            "(e.g. ```python or ```bash), no explanations before or after."
-        )
-
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-        )
-
-        text = response.text or ""
-
-        # Extract fenced code blocks (```lang\n...\n```)
         code_blocks: List[CodeBlock] = []
         pattern = re.compile(r"```(\w+)?\n(.*?)```", re.DOTALL)
         for match in pattern.finditer(text):
@@ -91,6 +74,61 @@ class SandboxedTool:
         # Fallback: no fences found — treat entire response as shell code
         if not code_blocks and text.strip():
             code_blocks.append(CodeBlock(code=text.strip(), language="shell"))
+
+        return code_blocks
+
+    def run_system_task(
+        self,
+        task: str,
+        on_output: Optional[Callable[[str], None]] = None,
+    ) -> Union[CodeExecutionRequest, str]:
+        """
+        Generates code for a natural language task but does NOT execute it.
+        Routes to Ollama (streaming) or Gemini based on provider config.
+        Returns a CodeExecutionRequest for human approval.
+        """
+        self.pending_blocks = []
+
+        config = get_provider_config()
+
+        prompt = (
+            f"Generate shell or Python code to accomplish the following task:\n\n"
+            f"{task}\n\n"
+            "Return ONLY the code blocks with proper language fences "
+            "(e.g. ```python or ```bash), no explanations before or after."
+        )
+
+        if config.provider == "ollama":
+            # Ollama branch: stream tokens progressively through on_output callback
+            os.environ["OLLAMA_HOST"] = config.ollama_base_url
+            try:
+                stream = ollama_lib.generate(
+                    model=config.ollama_codegen_model,
+                    prompt=prompt,
+                    stream=True,
+                )
+                text = ""
+                for chunk in stream:
+                    token = chunk.get("response", "")
+                    text += token
+                    if on_output:
+                        on_output(token)
+            except Exception as e:
+                raise OllamaUnavailableError(
+                    f"Ollama connection failed during code generation: {e}\n"
+                    f"Check that Ollama is running at {config.ollama_base_url}"
+                ) from e
+        else:
+            # Gemini branch (handles "gemini", "anthropic", "openai" — existing behaviour)
+            api_key = os.environ.get("GEMINI_API_KEY")
+            client = genai.Client(api_key=api_key)
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt,
+            )
+            text = response.text or ""
+
+        code_blocks = self._parse_code_blocks(text)
 
         if not code_blocks:
             return "No code was generated for this task."
