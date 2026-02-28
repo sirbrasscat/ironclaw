@@ -67,7 +67,7 @@
 | 2. Persistence & History | 2/2 | Complete   | 2026-02-28 |
 | 3. Web Dashboard & Security | 2/2 | Complete    | 2026-02-24 |
 | 4. Workspace & File Management | 2/2 | Complete    | 2026-02-24 |
-| 5. Local Model Support via Ollama | 1/3 | In Progress | —          |
+| 5. Local Model Support via Ollama | 2/3 | In Progress | —          |
 
 
 ### Phase 5: Local model support via Ollama
@@ -79,5 +79,5 @@
 
 Plans:
 - [x] 05-01-PLAN.md — Provider config module (ProviderConfig, health check, model resolution)
-- [ ] 05-02-PLAN.md — Agent core integration (wire ProviderConfig into core.py model selection)
-- [ ] 05-03-PLAN.md — Sandbox codegen integration (wire ProviderConfig into sandbox.py codegen)
+- [x] 05-02-PLAN.md — Agent core integration (wire ProviderConfig into core.py and sandbox.py)
+- [ ] 05-03-PLAN.md — Startup integration (provider_banner, health check display, error handling in main.py/web_ui.py)

@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-02-28T07:21:33.232Z"
+last_updated: "2026-02-27T00:10:00Z"
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 12
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State: IronClaw Agent System
@@ -19,9 +19,9 @@ progress:
 
 ## Current Position
 **Phase**: 05-local-model-support-via-ollama
-**Plan**: 02 (next)
-**Status**: In progress — 05-01 complete, 05-02 and 05-03 remaining
-**Progress**: [████████████████████] 83% (10/12 plans)
+**Plan**: 03 (next)
+**Status**: In progress — 05-01 and 05-02 complete, 05-03 remaining
+**Progress**: [█████████████████████▓] 92% (11/12 plans)
 
 ## Performance Metrics
 - **Requirement Coverage**: ENG-05 in progress
@@ -41,6 +41,8 @@ progress:
 - [Phase 05]: Skipped Telegram integration as per user request.
 - [Phase 05-01]: httpx used for async Ollama health check; OLLAMA_MODEL as shared fallback for agent+codegen; check_ollama_health() never raises.
 - [Phase 05-01]: Provider auto-detect order: GEMINI_API_KEY -> ANTHROPIC_API_KEY -> OPENAI_API_KEY -> gemini default.
+- [Phase 05-02]: OllamaProvider+OpenAIModel for pydantic-ai Ollama agent (not string prefix); chunk.get('response','') for streaming token accumulation.
+- [Phase 05-02]: _parse_code_blocks() extracted as shared helper; OLLAMA_HOST env var set before ollama_lib.generate() so library reads it.
 
 ### Roadmap Evolution
 - Phase 5 added: Local model support via Ollama
@@ -50,12 +52,12 @@ progress:
 - [x] Execute Phase 3: Web Dashboard & Security.
 - [x] Execute Phase 4: Workspace & File Management.
 - [x] Execute Phase 5-01: Provider config module.
-- [ ] Execute Phase 5-02: Agent core integration.
+- [x] Execute Phase 5-02: Agent core integration.
 - [ ] Execute Phase 5-03: Sandbox codegen integration.
 
 ### Blockers
 - None.
 
 ## Session Continuity
-**Last Action**: Executed 05-01 (provider config module). Created src/agent/provider.py with ProviderConfig, get_provider_config(), check_ollama_health(), get_missing_models(), provider_banner(), OllamaUnavailableError.
-**Next Step**: Execute 05-02 (agent core integration — wire ProviderConfig into core.py model selection).
+**Last Action**: Executed 05-02 (agent core integration). Updated core.py with OllamaProvider+OpenAIModel; updated sandbox.py with provider-aware run_system_task(), _parse_code_blocks() helper, and OllamaUnavailableError streaming error handling.
+**Next Step**: Execute 05-03 (web UI / startup integration — provider_banner, health check display, OllamaUnavailableError handling in web_ui.py and main.py).

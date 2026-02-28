@@ -48,6 +48,7 @@
 | SEC-02 | Phase 3 | 03-01 | Complete |
 | SEC-03 | Phase 2 | 02-01 | Complete |
 | SEC-04 | Phase 1 | 01-01 | Complete |
+| ENG-05 | Phase 5 | 05-01, 05-02 | In Progress |
 
 ---
-*Last updated: 2026-02-23*
+*Last updated: 2026-02-27*
