@@ -2,17 +2,17 @@
 
 ## Project Reference
 **Core Value**: Empowering users with a proactive, system-aware AI assistant that can be controlled from anywhere safely.
-**Current Focus**: Phase 1 complete. Ready to begin Phase 2.
+**Current Focus**: Project completed.
 
 ## Current Position
-**Phase**: Phase 2: Persistence & History
+**Phase**: All Phases Complete
 **Plan**: None
-**Status**: Ready to plan
-**Progress**: [████░░░░░░░░░░░░░░░░] 20%
+**Status**: Ready for hand-off
+**Progress**: [████████████████████] 100%
 
 ## Performance Metrics
-- **Requirement Coverage**: 100% (12/12 v1 requirements mapped)
-- **Phase Completion**: 1/5
+- **Requirement Coverage**: 100% (10/10 v1 requirements mapped and completed)
+- **Phase Completion**: 4/4
 - **Research Confidence**: HIGH
 
 ## Accumulated Context
@@ -22,13 +22,19 @@
 - SQLite/SQLAlchemy for persistence (from research).
 - Using google-genai SDK directly for code generation in run_system_task (decoupled from OI's own LLM loop).
 - Gemini model: gemini-3-flash-preview.
+- Storing Pydantic AI ModelMessage objects as JSON in SQLite for Phase 2 persistence.
+- [Phase 02-02]: Use result.new_messages() for incremental DB save to avoid duplicates; fall back to 'kind' field when 'role' absent in ModelMessage dicts.
+- [Phase 04]: Used snapshot-based diffing to detect file changes in the workspace for UI downloads.
+- [Phase 05]: Skipped Telegram integration as per user request.
 
 ### Todos
-- [ ] Plan and execute Phase 2: Persistence & History.
+- [x] Execute Phase 2: Persistence & History.
+- [x] Execute Phase 3: Web Dashboard & Security.
+- [x] Execute Phase 4: Workspace & File Management.
 
 ### Blockers
 - None.
 
 ## Session Continuity
-**Last Action**: Completed Phase 1 gap closure (01-03) — fixed HITL architecture so CodeExecutionRequest surfaces to Pydantic AI layer.
-**Next Step**: Plan Phase 2 (Persistence & History).
+**Last Action**: Executed 02-02 (CLI history persistence). Committed main.py history load/save loop and database manager kind-field fix.
+**Next Step**: Final verification and project wrap-up.
