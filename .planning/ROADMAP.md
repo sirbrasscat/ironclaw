@@ -70,7 +70,7 @@
 | 3. Web Dashboard & Security | 2/2 | Complete    | 2026-02-24 |
 | 4. Workspace & File Management | 2/2 | Complete    | 2026-02-24 |
 | 5. Local Model Support via Ollama | 4/4 | Complete   | 2026-02-28 |
-| 6. Phase 4 Workspace Verification | 0/1 | Not started | - |
+| 6. Phase 4 Workspace Verification | 1/1 | Complete | 2026-02-28 |
 | 7. Ollama CLI Streaming Fix | 0/1 | Not started | - |
 
 
@@ -96,7 +96,7 @@ Plans:
   1. All 5 UAT tests in 04-UAT.md have results (pass/fail, not pending).
   2. 04-VERIFICATION.md exists with formal sign-off on ENG-03 and WEB-03.
 **Plans**:
-- [ ] 06-01-PLAN.md — Run Phase 4 UAT and create VERIFICATION.md.
+- [x] 06-01-PLAN.md — Run Phase 4 UAT and create VERIFICATION.md.
 
 ### Phase 7: Ollama CLI Streaming Fix
 **Goal:** Enable progressive token streaming for Ollama in CLI mode and remove the hardcoded cloud model string from SandboxedTool.

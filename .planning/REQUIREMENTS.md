@@ -5,12 +5,12 @@
 ### Core Engine (ENG)
 - [x] **ENG-01**: Integrate Pydantic AI with Open Interpreter for core orchestration and agent lifecycle.
 - [x] **ENG-02**: Execute shell commands and Python code via the agent with real-time output capture.
-- [ ] **ENG-03**: Support workspace file management (upload/download/read/write) for the agent.
+- [~] **ENG-03**: Support workspace file management (upload/download/read/write) for the agent. _(partial: bind-mount infrastructure complete; system prompt lacks /workspace/ path guidance for uploaded files)_
 
 ### Web Dashboard (WEB)
 - [x] **WEB-01**: Implement a Chainlit-based web interface for primary interactive chat and control.
 - [x] **WEB-02**: Stream real-time execution logs and code blocks to the Web UI.
-- [ ] **WEB-03**: Provide a UI-based file manager for interacting with the agent's workspace.
+- [x] **WEB-03**: Provide a UI-based file manager for interacting with the agent's workspace.
 
 ### Security & Persistence (SEC)
 - [x] **SEC-01**: Implement mandatory Human-in-the-loop (HITL) approval for destructive or high-risk system commands.
@@ -40,10 +40,10 @@
 |--------|-------|------|--------|
 | ENG-01 | Phase 1 | 01-02 | Complete |
 | ENG-02 | Phase 1 | 01-01 | Complete |
-| ENG-03 | Phase 6 | 06-01 | Pending |
+| ENG-03 | Phase 4, 6 | 04-01, 04-02, 06-01 | Partial |
 | WEB-01 | Phase 3 | 03-01 | Complete |
 | WEB-02 | Phase 3 | 03-02 | Complete |
-| WEB-03 | Phase 6 | 06-01 | Pending |
+| WEB-03 | Phase 4, 6 | 04-02, 06-01 | Complete |
 | SEC-01 | Phase 1 | 01-02 | Complete |
 | SEC-02 | Phase 3 | 03-01 | Complete |
 | SEC-03 | Phase 2 | 02-01 | Complete |
