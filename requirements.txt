@@ -7,3 +7,5 @@ pydantic-settings
 pytest
 chainlit
 python-dotenv
+ollama
+httpx
