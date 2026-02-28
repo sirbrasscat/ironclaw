@@ -14,7 +14,7 @@ load_dotenv()
 import asyncio
 from pydantic import TypeAdapter
 from pydantic_ai.messages import ModelMessage
-from src.agent.core import ironclaw_agent, CodeExecutionRequest
+from src.agent.core import ironclaw_agent, CodeExecutionRequest, AgentDeps
 from src.agent.provider import get_provider_config, check_ollama_health, get_missing_models, provider_banner
 from src.database.manager import DatabaseManager
 
@@ -68,6 +68,9 @@ async def main(session_id: str = "default"):
     if history:
         print(f"[*] Loaded {len(history)} previous messages.")
     
+    _callback = lambda token: print(token, end='', flush=True)
+    _deps = AgentDeps(on_output=_callback)
+
     while True:
         try:
             user_input = input("\nUser: ").strip()
@@ -77,10 +80,12 @@ async def main(session_id: str = "default"):
                 break
             
             result = await ironclaw_agent.run(
-                user_input, 
+                user_input,
                 message_history=history,
-                output_type=CodeExecutionRequest | str
+                output_type=CodeExecutionRequest | str,
+                deps=_deps,
             )
+            print()  # trailing newline after streaming so approval prompt starts on its own line
             
             # Save new messages
             new_msgs = adapter.dump_python(result.new_messages(), mode='json')
@@ -101,9 +106,10 @@ async def main(session_id: str = "default"):
                 if approval in ["y", "yes"]:
                     print("Executing...")
                     confirm_result = await ironclaw_agent.run(
-                        "Confirm the execution.", 
+                        "Confirm the execution.",
                         message_history=history,
-                        output_type=str
+                        output_type=str,
+                        deps=_deps,
                     )
                     
                     # Save confirmation messages
