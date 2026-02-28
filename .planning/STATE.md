@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: complete
-last_updated: "2026-02-28T07:32:00Z"
+last_updated: "2026-02-28T08:29:00Z"
 progress:
   total_phases: 5
   completed_phases: 5
@@ -19,9 +19,9 @@ progress:
 
 ## Current Position
 **Phase**: 05-local-model-support-via-ollama
-**Plan**: 03 (complete)
-**Status**: All plans complete — Phase 05 done, milestone v1.0 delivered
-**Progress**: [██████████████████████] 100% (12/12 plans)
+**Plan**: 04 (complete)
+**Status**: All plans complete — Phase 05 done (including gap-closure 05-04), milestone v1.0 delivered
+**Progress**: [██████████████████████] 100% (13/13 plans)
 
 ## Performance Metrics
 - **Requirement Coverage**: ENG-05 complete
@@ -44,6 +44,7 @@ progress:
 - [Phase 05-02]: OllamaProvider+OpenAIModel for pydantic-ai Ollama agent (not string prefix); chunk.get('response','') for streaming token accumulation.
 - [Phase 05-02]: _parse_code_blocks() extracted as shared helper; OLLAMA_HOST env var set before ollama_lib.generate() so library reads it.
 - [Phase 05-03]: provider_banner() in web_ui.py welcome message; __main__ guard updated to allow PROVIDER=ollama without cloud API keys; AskActionMessage payload via .get() defensively.
+- [Phase 05-04]: @tool_plain -> @tool for run_system_task so RunContext passes on_output callback to SandboxedTool.run_system_task(); module-level wrapper updated to accept and forward on_output; Ollama code-gen now streams tokens progressively.
 
 ### Roadmap Evolution
 - Phase 5 added: Local model support via Ollama
@@ -55,10 +56,11 @@ progress:
 - [x] Execute Phase 5-01: Provider config module.
 - [x] Execute Phase 5-02: Agent core integration.
 - [x] Execute Phase 5-03: Startup integration (provider banner + Ollama health check in main.py and web_ui.py).
+- [x] Execute Phase 5-04: Gap closure — wire on_output streaming callback into run_system_task; update ENG-05 traceability row.
 
 ### Blockers
 - None.
 
 ## Session Continuity
-**Last Action**: Executed 05-03 (startup integration). Updated main.py with provider banner + Ollama health check + updated __main__ guard; updated web_ui.py with provider banner in welcome + AskActionMessage Ollama fallback flow.
-**Next Step**: Milestone v1.0 complete — all 12 plans across 5 phases delivered.
+**Last Action**: Executed 05-04 (gap closure). Wired on_output streaming callback from AgentDeps through RunContext into run_system_task tool and module-level wrapper. Updated ENG-05 traceability row to Complete with all three plans.
+**Next Step**: Milestone v1.0 complete — all 13 plans across 5 phases delivered (including gap-closure 05-04).

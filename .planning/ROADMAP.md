@@ -75,9 +75,10 @@
 **Goal:** Allow users to run IronClaw with a locally-hosted Ollama model instead of cloud APIs.
 **Requirements**: ENG-05
 **Depends on:** Phase 4
-**Plans:** 3/3 plans complete
+**Plans:** 4/4 plans complete
 
 Plans:
 - [x] 05-01-PLAN.md — Provider config module (ProviderConfig, health check, model resolution)
 - [x] 05-02-PLAN.md — Agent core integration (wire ProviderConfig into core.py and sandbox.py)
-- [ ] 05-03-PLAN.md — Startup integration (provider_banner, health check display, error handling in main.py/web_ui.py)
+- [x] 05-03-PLAN.md — Startup integration (provider_banner, health check display, error handling in main.py/web_ui.py)
+- [x] 05-04-PLAN.md — Gap closure: wire on_output streaming callback into run_system_task; update ENG-05 traceability
