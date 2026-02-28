@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-last_updated: "2026-02-27T00:10:00Z"
+status: complete
+last_updated: "2026-02-28T07:32:00Z"
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 12
-  completed_plans: 11
+  completed_plans: 12
 ---
 
 # Project State: IronClaw Agent System
@@ -19,13 +19,13 @@ progress:
 
 ## Current Position
 **Phase**: 05-local-model-support-via-ollama
-**Plan**: 03 (next)
-**Status**: In progress — 05-01 and 05-02 complete, 05-03 remaining
-**Progress**: [█████████████████████▓] 92% (11/12 plans)
+**Plan**: 03 (complete)
+**Status**: All plans complete — Phase 05 done, milestone v1.0 delivered
+**Progress**: [██████████████████████] 100% (12/12 plans)
 
 ## Performance Metrics
-- **Requirement Coverage**: ENG-05 in progress
-- **Phase Completion**: 4/5
+- **Requirement Coverage**: ENG-05 complete
+- **Phase Completion**: 5/5
 - **Research Confidence**: HIGH
 
 ## Accumulated Context
@@ -43,6 +43,7 @@ progress:
 - [Phase 05-01]: Provider auto-detect order: GEMINI_API_KEY -> ANTHROPIC_API_KEY -> OPENAI_API_KEY -> gemini default.
 - [Phase 05-02]: OllamaProvider+OpenAIModel for pydantic-ai Ollama agent (not string prefix); chunk.get('response','') for streaming token accumulation.
 - [Phase 05-02]: _parse_code_blocks() extracted as shared helper; OLLAMA_HOST env var set before ollama_lib.generate() so library reads it.
+- [Phase 05-03]: provider_banner() in web_ui.py welcome message; __main__ guard updated to allow PROVIDER=ollama without cloud API keys; AskActionMessage payload via .get() defensively.
 
 ### Roadmap Evolution
 - Phase 5 added: Local model support via Ollama
@@ -53,11 +54,11 @@ progress:
 - [x] Execute Phase 4: Workspace & File Management.
 - [x] Execute Phase 5-01: Provider config module.
 - [x] Execute Phase 5-02: Agent core integration.
-- [ ] Execute Phase 5-03: Sandbox codegen integration.
+- [x] Execute Phase 5-03: Startup integration (provider banner + Ollama health check in main.py and web_ui.py).
 
 ### Blockers
 - None.
 
 ## Session Continuity
-**Last Action**: Executed 05-02 (agent core integration). Updated core.py with OllamaProvider+OpenAIModel; updated sandbox.py with provider-aware run_system_task(), _parse_code_blocks() helper, and OllamaUnavailableError streaming error handling.
-**Next Step**: Execute 05-03 (web UI / startup integration — provider_banner, health check display, OllamaUnavailableError handling in web_ui.py and main.py).
+**Last Action**: Executed 05-03 (startup integration). Updated main.py with provider banner + Ollama health check + updated __main__ guard; updated web_ui.py with provider banner in welcome + AskActionMessage Ollama fallback flow.
+**Next Step**: Milestone v1.0 complete — all 12 plans across 5 phases delivered.
