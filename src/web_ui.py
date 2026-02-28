@@ -32,7 +32,7 @@ from pydantic import TypeAdapter
 from pydantic_ai.messages import ModelMessage
 
 from src.agent.core import ironclaw_agent, AgentDeps
-from src.agent.tools.sandbox import CodeExecutionRequest
+from src.agent.tools.sandbox import CodeExecutionRequest, get_sandbox_tool
 from src.agent.tools.workspace import (
     list_workspace_files,
     get_workspace_snapshot,
@@ -241,6 +241,17 @@ async def on_message(message: cl.Message):
             history = result.all_messages()
             cl.user_session.set("history", history)
             
+            # Smaller Ollama models may return a plain string even after run_system_task
+            # generates code, because they don't relay the CodeExecutionRequest as
+            # structured output. Fall back to the singleton's pending_blocks if any.
+            if not isinstance(response, CodeExecutionRequest):
+                pending = get_sandbox_tool().pending_blocks
+                if pending:
+                    response = CodeExecutionRequest(
+                        blocks=pending,
+                        reasoning=f"Generated code for: {message.content}",
+                    )
+
             if isinstance(response, CodeExecutionRequest):
                 await handle_code_approval(response, msg, history, session_id, old_snapshot)
             else:
