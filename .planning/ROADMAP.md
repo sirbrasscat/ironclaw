@@ -72,6 +72,7 @@
 | 5. Local Model Support via Ollama | 4/4 | Complete   | 2026-02-28 |
 | 6. Phase 4 Workspace Verification | 1/1 | Complete | 2026-02-28 |
 | 7. Ollama CLI Streaming Fix | 1/1 | Complete   | 2026-02-28 |
+| 8. ENG-03 Prompt Polish | 1/1 | Complete | 2026-02-28 |
 
 
 ### Phase 5: Local model support via Ollama
@@ -106,5 +107,15 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Running `python3 src/main.py` with PROVIDER=ollama streams tokens progressively as they are generated.
   2. SandboxedTool.__init__ no longer hardcodes interpreter.llm.model to a cloud model string.
+Plans:
+- [x] 07-01-PLAN.md — Pass AgentDeps to ironclaw_agent.run() in main.py; clean up hardcoded model string.
+
+### Phase 8: ENG-03 Prompt Polish
+**Goal:** Address the ENG-03 partial satisfaction gap by updating the system prompt to explicitly instruct the agent to use the `/workspace/` path prefix for all file operations.
+**Depends on:** Phase 6
+**Requirements**: ENG-03
+**Success Criteria** (what must be TRUE):
+  1. `src/agent/prompts.py` includes a prescriptive instruction to use `/workspace/<filename>` in generated code.
+  2. ENG-03 is marked as SATISFIED in `v1.0-MILESTONE-AUDIT.md`.
 **Plans**:
-- [ ] 07-01-PLAN.md — Pass AgentDeps to ironclaw_agent.run() in main.py; clean up hardcoded model string.
+- [x] 08-01-PLAN.md — Update system prompt and verify ENG-03.

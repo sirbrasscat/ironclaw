@@ -5,23 +5,23 @@ milestone_name: milestone
 status: unknown
 last_updated: "2026-02-28T10:47:18.892Z"
 progress:
-  total_phases: 7
-  completed_phases: 7
-  total_plans: 15
-  completed_plans: 15
+  total_phases: 8
+  completed_phases: 8
+  total_plans: 16
+  completed_plans: 16
 ---
 
 # Project State: IronClaw Agent System
 
 ## Project Reference
 **Core Value**: Empowering users with a proactive, system-aware AI assistant that can be controlled from anywhere safely.
-**Current Focus**: Phase 07 — Ollama CLI Streaming Fix (complete).
+**Current Focus**: Phase 08 — ENG-03 Prompt Polish (complete).
 
 ## Current Position
-**Phase**: 07-ollama-cli-streaming-fix
+**Phase**: 08-polish-eng03-gap
 **Plan**: 01 (complete)
-**Status**: Phase 07 complete — GAP-01 and GAP-02 closed; ENG-05 fully complete end-to-end
-**Progress**: [██████████████████████] 100% (15/15 plans)
+**Status**: Phase 08 complete — ENG-03 gap closed.
+**Progress**: [██████████████████████] 100% (16/16 plans)
 
 ## Performance Metrics
 - **Requirement Coverage**: ENG-05 complete
