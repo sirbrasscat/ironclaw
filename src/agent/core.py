@@ -18,7 +18,10 @@ _provider_config = get_provider_config()
 
 if _provider_config.provider == "ollama":
     # Pydantic-ai uses OllamaProvider (OpenAI-compatible) for Ollama backends
-    _ollama_provider = OllamaProvider(base_url=_provider_config.ollama_base_url)
+    # OllamaProvider passes base_url directly to AsyncOpenAI, which requires
+    # the /v1 path suffix to reach Ollama's OpenAI-compatible endpoint.
+    _ollama_base = _provider_config.ollama_base_url.rstrip("/")
+    _ollama_provider = OllamaProvider(base_url=f"{_ollama_base}/v1")
     default_model = OpenAIModel(
         _provider_config.ollama_agent_model,
         provider=_ollama_provider,
