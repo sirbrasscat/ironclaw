@@ -40,6 +40,9 @@ progress:
 - [Phase 04]: Used snapshot-based diffing to detect file changes in the workspace for UI downloads.
 - [Phase 05]: Skipped Telegram integration as per user request.
 
+### Roadmap Evolution
+- Phase 5 added: Local model support via Ollama
+
 ### Todos
 - [x] Execute Phase 2: Persistence & History.
 - [x] Execute Phase 3: Web Dashboard & Security.
