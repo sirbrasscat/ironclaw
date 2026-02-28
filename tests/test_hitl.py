@@ -9,13 +9,15 @@ def sandbox_tool():
     tool.pending_blocks = []
     return tool
 
-@patch('src.agent.tools.sandbox.interpreter')
-def test_run_system_task_generates_request(mock_interpreter, sandbox_tool):
-    # Setup mock response from interpreter.chat
-    mock_interpreter.chat.return_value = [
-        {"role": "assistant", "type": "message", "content": "I will list files."},
-        {"role": "assistant", "type": "code", "language": "shell", "code": "ls -la"}
-    ]
+@patch('src.agent.tools.sandbox.genai.Client')
+def test_run_system_task_generates_request(mock_client_class, sandbox_tool):
+    # Setup mock client and response
+    mock_client = MagicMock()
+    mock_client_class.return_value = mock_client
+    
+    mock_response = MagicMock()
+    mock_response.text = "```shell\nls -la\n```"
+    mock_client.models.generate_content.return_value = mock_response
     
     result = sandbox_tool.run_system_task("list files")
     
@@ -24,7 +26,7 @@ def test_run_system_task_generates_request(mock_interpreter, sandbox_tool):
     assert len(result.blocks) == 1
     assert result.blocks[0].code == "ls -la"
     assert result.blocks[0].language == "shell"
-    assert "I will list files" in result.reasoning
+    assert "To accomplish: list files" in result.reasoning
     assert len(sandbox_tool.pending_blocks) == 1
 
 @patch('src.agent.tools.sandbox.interpreter')

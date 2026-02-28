@@ -13,10 +13,10 @@ def test_docker_shell(sandbox_container):
     shell = DockerShell(sandbox_container)
     results = list(shell.run('echo "hello"'))
     assert len(results) > 0
-    assert "hello" in results[0]["output"]
+    assert "hello" in results[0]["content"]
 
 def test_docker_python(sandbox_container):
     python = DockerPython(sandbox_container)
     results = list(python.run('print(1+1)'))
     assert len(results) > 0
-    assert "2" in results[0]["output"]
+    assert "2" in results[0]["content"]
