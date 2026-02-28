@@ -32,7 +32,7 @@ from pydantic import TypeAdapter
 from pydantic_ai.messages import ModelMessage
 
 from src.agent.core import ironclaw_agent, AgentDeps
-from src.agent.tools.sandbox import CodeExecutionRequest, get_sandbox_tool
+from src.agent.tools.sandbox import CodeExecutionRequest, get_sandbox_tool, confirm_execution as _direct_confirm
 from src.agent.tools.workspace import (
     list_workspace_files,
     get_workspace_snapshot,
@@ -308,46 +308,39 @@ async def handle_code_approval(request: CodeExecutionRequest, original_msg: cl.M
     ).send()
 
     if res and res.get("payload", {}).get("value") == "yes":
-        # Create a step for execution logs
+        # Execute directly — don't route through the agent again.
+        # Small models (e.g. llama3.1:8b) often respond with plain text instead
+        # of calling confirm_execution(), so we call it ourselves.
+        import datetime
+        from pydantic_ai.messages import ModelRequest, UserPromptPart
+
         async with cl.Step(name="Docker Execution") as step:
+            output_lines: list[str] = []
             def on_output(content: str):
+                output_lines.append(content)
                 cl.run_sync(step.stream_token(content))
 
-            deps = AgentDeps(on_output=on_output)
-            
-            async with ironclaw_agent.run_stream(
-                "Confirm the execution.",
-                message_history=history,
-                deps=deps
-            ) as result:
-                # Stream the final response (likely the same output or a summary)
-                response_msg = cl.Message(content="")
-                try:
-                    async for text in result.stream_text(debounce_by=0.01):
-                        await response_msg.stream_token(text)
-                except Exception:
-                    pass
-                
-                if response_msg.content:
-                    await response_msg.send()
-                
-                # After streaming is done, get full data
-                confirm_result_data = await result.get_output()
-                
-                # Save confirmation messages
-                confirm_new_msgs = adapter.dump_python(result.new_messages(), mode='json')
-                await db.save_messages(session_id, confirm_new_msgs)
-                
-                # Update history
-                history = result.all_messages()
-                cl.user_session.set("history", history)
-                
-                if not response_msg.content:
-                    response_msg.content = f"**Execution Result:**\n{confirm_result_data}"
-                    await response_msg.send()
-                
-                # Check for file changes after execution
-                if old_snapshot:
-                    await send_file_diff(old_snapshot)
+            execution_result = _direct_confirm(on_output=on_output)
+
+        result_summary = "".join(output_lines) or str(execution_result)
+        if result_summary.strip():
+            await cl.Message(content=f"**Execution Result:**\n```\n{result_summary}\n```").send()
+        else:
+            await cl.Message(content="Execution completed with no output.").send()
+
+        # Add a synthetic history note so the agent has execution context.
+        exec_note = ModelRequest(parts=[
+            UserPromptPart(
+                content=f"[SYSTEM] Execution completed. Output: {result_summary[:1000]}",
+                timestamp=datetime.datetime.now(datetime.timezone.utc),
+            )
+        ])
+        history = list(history) + [exec_note]
+        new_msgs = adapter.dump_python([exec_note], mode='json')
+        await db.save_messages(session_id, new_msgs)
+        cl.user_session.set("history", history)
+
+        if old_snapshot:
+            await send_file_diff(old_snapshot)
     else:
         await cl.Message(content="Execution cancelled by user.").send()
