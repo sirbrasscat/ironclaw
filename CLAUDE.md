@@ -35,7 +35,19 @@ pytest tests/test_hitl.py::test_name -v
 ## Environment Setup
 
 Copy `.env` with these keys:
-- `GEMINI_API_KEY` — primary LLM (gemini-2.5-flash); falls back to `ANTHROPIC_API_KEY` then `OPENAI_API_KEY`
+
+**Provider selection** (auto-detected from API keys; override with `PROVIDER=ollama|gemini|anthropic|openai`):
+- `GEMINI_API_KEY` — selects Gemini provider (gemini-2.5-flash); checked first in auto-detect
+- `ANTHROPIC_API_KEY` — selects Anthropic provider (claude-3-5-sonnet-latest)
+- `OPENAI_API_KEY` — selects OpenAI provider (gpt-4o)
+
+**Ollama** (when `PROVIDER=ollama`):
+- `OLLAMA_BASE_URL` — default `http://localhost:11434`
+- `OLLAMA_MODEL` — fallback model name (default: `llama3.2`)
+- `OLLAMA_AGENT_MODEL` — overrides agent model specifically
+- `OLLAMA_CODEGEN_MODEL` — overrides code-generation model specifically
+
+**Web UI:**
 - `CHAINLIT_PASSWORD` — web UI password (default: `ironclaw`)
 - `CHAINLIT_AUTH_SECRET` — session encryption secret for Chainlit
 
@@ -54,6 +66,7 @@ The system is built around a two-phase HITL (Human-in-the-Loop) execution model:
 | Module | Purpose |
 |--------|---------|
 | `src/agent/core.py` | Pydantic AI agent definition; tool registration; model selection from env |
+| `src/agent/provider.py` | Provider config resolution; Ollama health check; `ProviderConfig` dataclass |
 | `src/agent/prompts.py` | System prompt |
 | `src/agent/tools/sandbox.py` | `SandboxedTool` class: code generation + execution; `CodeExecutionRequest` / `CodeBlock` models |
 | `src/agent/tools/workspace.py` | Workspace file listing; snapshot/diff utilities for detecting file changes |
@@ -76,6 +89,10 @@ The system is built around a two-phase HITL (Human-in-the-Loop) execution model:
 ### Singleton Pattern
 
 `SandboxedTool` is a module-level singleton (`_sandbox_tool` in `sandbox.py`). It manages a single Docker container and `pending_blocks` state between the planning and execution calls. This means concurrent requests sharing a process would conflict — the current design assumes one active user at a time per process.
+
+## GSD Workflow
+
+This repo uses a `get-shit-done` skill system. Use `gsd-*` commands (e.g. `/gsd-execute-phase`) to trigger workflows; skill files live in `.github/skills/gsd-*/SKILL.md`. Do not apply GSD workflows unless explicitly asked.
 
 ## Python 3.14 Compatibility
 
